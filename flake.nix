@@ -1,5 +1,7 @@
 {
   inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+
     utils.url = "github:numtide/flake-utils";
 
     my-nvim = {
@@ -12,15 +14,21 @@
       overlays = [
         (final: prev: { neovim = final.callPackage my-nvim { }; })
       ];
-      pkgs = nixpkgs.legacyPackages.${system} { inherit overlays; };
+      pkgs = import nixpkgs {
+        inherit system overlays;
+      };
     in
     {
-      devShell = pkgs.mkShell {
+      devShells.default = pkgs.mkShell {
+
         packages = with pkgs; [
           neovim
         ];
-        # buildInputs = with pkgs; [
-        # ];
+
+        env = {
+          XDG_CONFIG_HOME = "${self}/nvim-config";
+        };
+
       };
     }
   );
