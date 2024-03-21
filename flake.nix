@@ -19,6 +19,10 @@
       pkgs = import nixpkgs {
         inherit system overlays;
       };
+      lnNvimConfig = 
+        ''
+          ln -s "$(pwd)"/nvim "$XDG_CONFIG_HOME"/
+        '';
       mkXDGEnv = variant:
       let
         uVariant = pkgs.lib.toUpper variant;
@@ -26,11 +30,12 @@
         ''
           export XDG_${uVariant}_HOME=$(mktemp -d --tmpdir="$(pwd)"/.tmp .${variant}.XXX)
         '';
-      xdgEnv = pkgs.lib.concatStrings
+      xdgEnv = pkgs.lib.concatStrings (
         (builtins.map 
           mkXDGEnv 
           ["config" "cache" "data" "state"] 
-        );
+        ) ++ [ lnNvimConfig ]
+      );
     in
     {
       devShells.default = with builtins; pkgs.mkShell {
